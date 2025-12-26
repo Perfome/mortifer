@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS AI | Geleceğin Zekası</title>
+    
+    <!-- FONT & ICON -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- THREE.JS (3D için) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- TYPED.JS (Hareketli yazı) -->
+    <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+    
+    <style>
+        /* === RESET & BASE === */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #e0e0ff;
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* === 120 FPS OPTIMIZATION === */
+        * {
+            will-change: transform, opacity;
+            backface-visibility: hidden;
+        }
+
+        /* === INTRO OVERLAY === */
+        .intro-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .intro-logo {
+            font-size: 5rem;
+            background: linear-gradient(135deg, #00d4ff 0%, #9d4edd 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 50px rgba(157, 78, 221, 0.5);
+        }
+
+        .intro-text {
+            font-size: 1.5rem;
+            margin-bottom: 3rem;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            width: 300px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00d4ff, #9d4edd);
+            width: 0%;
+            border-radius: 10px;
+            transition: width 3s cubic-bezier(0.65, 0, 0.35, 1);
+        }
+
+        /* === GLASSMORPHISM === */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* === NEUMORPHISM === */
+        .neu-card {
+            background: #0a0a0f;
+            border-radius: 24px;
+            box-shadow: 
+                20px 20px 60px rgba(0, 0, 0, 0.5),
+                -20px -20px 60px rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        /* === MAIN CONTAINER === */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 300px 1fr 350px;
+            gap: 2rem;
+            min-height: 100vh;
+        }
+
+        /* === SIDEBAR === */
+        .sidebar {
+            position: sticky;
+            top: 2rem;
+            height: calc(100vh - 4rem);
+        }
+
+        .profile-card {
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00d4ff, #9d4edd);
+            padding: 4px;
+            margin: 0 auto 1.5rem;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #0a0a0f;
+        }
+
+        .nav-links {
+            list-style: none;
+            padding: 1.5rem;
+        }
+
+        .nav-links li {
+            margin-bottom: 1rem;
+        }
+
+        .nav-links a {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            color: #a0a0cc;
+            text-decoration: none;
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            background: rgba(157, 78, 221, 0.1);
+            color: #00d4ff;
+            transform: translateX(10px);
+        }
+
+        /* === CONTENT AREA === */
+        .content-area {
+            padding: 2rem 0;
+        }
+
+        .hero-section {
+            padding: 4rem 2rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 4.5rem;
+            background: linear-gradient(135deg, #00d4ff 0%, #9d4edd 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .typed-text {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            min-height: 60px;
+        }
+
+        .typed-cursor {
+            color: #00d4ff;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 3rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00d4ff 0%, #9d4edd 100%);
+            color: white;
+            border: none;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #e0e0ff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 20px 40px rgba(0, 212, 255, 0.3);
+        }
+
+        /* === AI CHAT BOT === */
+        .ai-sidebar {
+            position: sticky;
+            top: 2rem;
+            height: calc(100vh - 4rem);
+        }
+
+        .ai-header {
+            padding: 1.5rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .ai-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .ai-chat {
+            height: 500px;
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-radius: 16px;
+            max-width: 80%;
+            animation: messageAppear 0.3s ease;
+        }
+
+        @keyframes messageAppear {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .ai-message {
+            background: rgba(157, 78, 221, 0.2);
+            align-self: flex-start;
+        }
+
+        .user-message {
+            background: rgba(0, 212, 255, 0.2);
+            align-self: flex-end;
+            margin-left: auto;
+        }
+
+        .chat-input {
+            padding: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 1rem;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+        }
+
+        .input-group button {
+            padding: 1rem;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #00d4ff, #9d4edd);
+            border: none;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .input-group button:hover {
+            transform: rotate(15deg);
+        }
+
+        /* === FEATURES GRID === */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
+        }
+
+        .feature-card {
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-20px) rotateX(10deg);
+            box-shadow: 0 40px 80px rgba(0, 212, 255, 0.2);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #00d4ff, #9d4edd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* === 3D BACKGROUND === */
+        #threeCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar, .ai-sidebar {
+                position: static;
+                height: auto;
+            }
+            
+            .hero-title {
+                font-size: 3rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 1rem;
+            }
+            
+            .hero-section {
+                padding: 2rem 1rem;
+            }
+            
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- INTRO OVERLAY -->
+    <div class="intro-overlay" id="introOverlay">
+        <div class="intro-logo">NEXUS</div>
+        <div class="intro-text">Geleceğin Yapay Zekası Yükleniyor...</div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+    </div>
+
+    <!-- 3D BACKGROUND -->
+    <canvas id="threeCanvas"></canvas>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-container">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="profile-card glass-card">
+                <div class="avatar">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Perfome" alt="Avatar">
+                </div>
+                <h3>@Perfome</h3>
+                <p>AI Developer & Futurist</p>
+            </div>
+
+            <nav class="nav-card neu-card">
+                <ul class="nav-links">
+                    <li><a href="#home" class="active"><i class="fas fa-home"></i> Ana Sayfa</a></li>
+                    <li><a href="#ai"><i class="fas fa-brain"></i> Nexus AI</a></li>
+                    <li><a href="#projects"><i class="fas fa-code"></i> Projeler</a></li>
+                    <li><a href="#lab"><i class="fas fa-flask"></i> AI Lab</a></li>
+                    <li><a href="#about"><i class="fas fa-user-astronaut"></i> Hakkımda</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="content-area">
+            <section class="hero-section glass-card" id="home">
+                <h1 class="hero-title">NEXUS<br>YAPAY ZEKA</h1>
+                <div class="typed-text">
+                    <span id="typed"></span>
+                    <span class="typed-cursor">|</span>
+                </div>
+                <p>Dünyanın en gelişmiş nöral ağı ile tanışın. 120 FPS, tam interaktif,<br>glassmorphism ve neumorphism tasarımın mükemmel uyumu.</p>
+                
+                <div class="cta-buttons">
+                    <a href="#ai" class="btn btn-primary">
+                        <i class="fas fa-robot"></i> AI'yi Deneyimle
+                    </a>
+                    <a href="#lab" class="btn btn-secondary">
+                        <i class="fas fa-vial"></i> Laboratuvar
+                    </a>
+                </div>
+            </section>
+
+            <!-- FEATURES -->
+            <div class="features-grid">
+                <div class="feature-card glass-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3>Derin Öğrenme</h3>
+                    <p>Sinir ağları ile gerçek zamanlı analiz ve tahmin yetenekleri.</p>
+                </div>
+
+                <div class="feature-card glass-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <h3>Görüntü İşleme</h3>
+                    <p>Computer vision ile nesne tanıma ve görsel analiz.</p>
+                </div>
+
+                <div class="feature-card glass-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <h3>Doğal Dil</h3>
+                    <p>İnsan gibi konuşan, anlayan ve cevap veren AI modeli.</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- AI CHAT SIDEBAR -->
+        <aside class="ai-sidebar glass-card">
+            <div class="ai-header">
+                <div class="ai-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h3>NEXUS AI</h3>
+                <p>Çevrimiçi ve aktif</p>
+            </div>
+
+            <div class="ai-chat" id="chatMessages">
+                <div class="message ai-message">
+                    <strong>NEXUS:</strong> Merhaba! Ben Nexus, gelişmiş yapay zeka asistanınız. Size nasıl yardımcı olabilirim?
+                </div>
+            </div>
+
+            <div class="chat-input">
+                <div class="input-group">
+                    <input type="text" id="userInput" placeholder="Nexus'a bir şey sorun...">
+                    <button id="sendBtn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        // ==================== INTRO ANIMATION ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            const introOverlay = document.getElementById('introOverlay');
+            const progressFill = document.getElementById('progressFill');
+            
+            // Progress bar animation
+            setTimeout(() => {
+                progressFill.style.width = '100%';
+            }, 100);
+            
+            // Hide intro after 3 seconds
+            setTimeout(() => {
+                introOverlay.style.opacity = '0';
+                introOverlay.style.pointerEvents = 'none';
+                setTimeout(() => {
+                    introOverlay.style.display = 'none';
+                }, 1000);
+            }, 3000);
+        });
+
+        // ==================== TYPED.JS ANIMATION ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            const typed = new Typed('#typed', {
+                strings: [
+                    'Geleceğin Zekası Burası',
+                    '120 FPS Smooth Experience',
+                    'Glassmorphism + Neumorphism',
+                    'Yapay Zeka Asistanınız'
+                ],
+                typeSpeed: 50,
+                backSpeed: 30,
+                backDelay: 2000,
+                startDelay: 1000,
+                loop: true,
+                showCursor: true,
+                cursorChar: '|'
+            });
+        });
+
+        // ==================== THREE.JS 3D BACKGROUND ====================
+        function initThreeJS() {
+            const canvas = document.getElementById('threeCanvas');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ 
+                canvas, 
+                alpha: true, 
+                antialias: true 
+            });
+            
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            
+            // Particles
+            const particlesGeometry = new THREE.BufferGeometry();
+            const count = 5000;
+            
+            const positions = new Float32Array(count * 3);
+            const colors = new Float32Array(count * 3);
+            
+            for (let i = 0; i < count * 3; i += 3) {
+                positions[i] = (Math.random() - 0.5) * 50;
+                positions[i + 1] = (Math.random() - 0.5) * 50;
+                positions[i + 2] = (Math.random() - 0.5) * 50;
+                
+                colors[i] = Math.random();
+                colors[i + 1] = Math.random();
+                colors[i + 2] = Math.random();
+            }
+            
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            particlesGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            
+            const particlesMaterial = new THREE.PointsMaterial({
+                size: 0.02,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.6
+            });
+            
+            const particles = new THREE.Points(particlesGeometry, particlesMaterial);
+            scene.add(particles);
+            
+            camera.position.z = 5;
+            
+            // Animation
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                particles.rotation.x += 0.001;
+                particles.rotation.y += 0.002;
+                
+                const time = Date.now() * 0.001;
+                particles.position.y = Math.sin(time) * 0.2;
+                
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+            
+            // Resize
+            window.addEventListener('resize', () => {
+   
